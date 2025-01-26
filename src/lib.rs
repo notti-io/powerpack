@@ -30,7 +30,7 @@
 //! # }
 //! ```
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::io;
 use std::path::PathBuf;
 use std::time::Duration;
@@ -149,6 +149,11 @@ struct Data {
     /// Mark whether the item is valid when the modifier is pressed.
     #[serde(skip_serializing_if = "Option::is_none")]
     valid: Option<bool>,
+
+    /// Variables which are passed out of the script filter object if this
+    /// modifier is used to action the result.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    variables: Option<BTreeMap<String, String>>,
 }
 
 /// The modifier settings for an [`Item`] when a modifier key is pressed.
@@ -161,19 +166,31 @@ pub struct Modifier {
     data: Data,
 }
 
+/// The cache settings for an [`Output`].
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize)]
+pub struct Cache {
+    /// The cache duration in seconds.
+    #[serde(serialize_with = "duration_as_secs")]
+    seconds: Duration,
+
+    /// Whether to show the cache and call the script in the background as well.
+    #[serde(rename = "loosereload", skip_serializing_if = "Option::is_none")]
+    loose_reload: Option<bool>,
+}
+
 /// An Alfred script filter item.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize)]
 pub struct Item {
+    /// A unique identifier for the item.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    uid: Option<String>,
+
     /// The title displayed in the result row.
     title: String,
 
     /// The subtitle displayed in the result row.
     #[serde(skip_serializing_if = "Option::is_none")]
     subtitle: Option<String>,
-
-    /// A unique identifier for the item.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    uid: Option<String>,
 
     /// The argument which is passed through to the output.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -203,6 +220,10 @@ pub struct Item {
     #[serde(rename = "mods", skip_serializing_if = "HashMap::is_empty")]
     modifiers: HashMap<Keys, Data>,
 
+    /// The Universal Action items used when actioning the result.
+    #[serde(skip_serializing_if = "Value::is_null")]
+    action: Value,
+
     /// Defines the copied or large type text for this item.
     #[serde(skip_serializing_if = "Option::is_none")]
     text: Option<Text>,
@@ -211,23 +232,39 @@ pub struct Item {
     #[serde(rename = "quicklookurl", skip_serializing_if = "Option::is_none")]
     quicklook_url: Option<String>,
 
-    #[serde(skip_serializing_if = "Value::is_null")]
-    action: Value,
+    /// Variables which are passed out of the script filter object if this
+    /// modifier is used to action the result.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    variables: Option<BTreeMap<String, String>>,
 }
 
-/// The output of a workflow (i.e. input for the script filter)
+/// The Alfred script filter workflow output.
+///
+/// A script filter is required to return zero or more [`Item`]s. Each [`Item`]
+/// describes a result row displayed in Alfred. The three obvious elements are
+/// the ones you see in an Alfred result row - [`Item::new`], [`Item::subtitle`]
+/// and [`Item::icon`].
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize)]
 pub struct Output {
     /// The interval in seconds after which to rerun the script filter.
     #[serde(
         skip_serializing_if = "Option::is_none",
-        serialize_with = "duration_as_secs"
+        serialize_with = "option_duration_as_secs"
     )]
     rerun: Option<Duration>,
 
     /// Whether to skip Alfred's knowledge for this output.
     #[serde(rename = "skipknowledge", skip_serializing_if = "Option::is_none")]
     skip_knowledge: Option<bool>,
+
+    /// Variables which are passed out of the script filter object if this
+    /// modifier is used to action the result.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    variables: Option<BTreeMap<String, String>>,
+
+    /// The cache settings for this output.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    cache: Option<Cache>,
 
     /// Each row item.
     items: Vec<Item>,
@@ -399,6 +436,60 @@ impl Modifier {
         self.data.valid = Some(valid);
         self
     }
+
+    /// Override the variables when the item is actioned with this modifier.
+    ///
+    /// See [`Output::variables`] for more information.
+    ///
+    /// - If not set, inherits the item variables.
+    ///
+    /// - If set, overrides the item's variables.
+    ///   ```
+    ///   # use powerpack::{Key, Modifier};
+    ///   let m = Modifier::new(Key::Command).variables([("key1", "value1")]);
+    ///   ```
+    ///
+    /// - If set to an empty object, no variables are passed out.
+    ///   ```
+    ///   # use powerpack::{Key, Modifier};
+    ///   let m = Modifier::new(Key::Command).variables::<&str, &str>([]);
+    ///   ```
+    #[must_use]
+    pub fn variables<K, V>(mut self, variables: impl IntoIterator<Item = (K, V)>) -> Self
+    where
+        K: Into<String>,
+        V: Into<String>,
+    {
+        self.data.variables = Some(
+            variables
+                .into_iter()
+                .map(|(k, v)| (k.into(), v.into()))
+                .collect(),
+        );
+        self
+    }
+}
+
+impl Cache {
+    /// Create a new cache with the given duration.
+    #[must_use]
+    pub fn new(duration: Duration) -> Self {
+        Self {
+            seconds: duration,
+            ..Self::default()
+        }
+    }
+
+    /// Set the loose reload value.
+    ///
+    /// If set then Alfred will try to show any cached data first. If it's
+    /// determined to be stale, the script runs in the background and replaces
+    /// results with the new data when it becomes available.
+    #[must_use]
+    pub fn loose_reload(mut self, loose_reload: bool) -> Self {
+        self.loose_reload = Some(loose_reload);
+        self
+    }
 }
 
 impl Item {
@@ -409,13 +500,6 @@ impl Item {
             title: title.into(),
             ..Self::default()
         }
-    }
-
-    /// Set the subtitle for this item.
-    #[must_use]
-    pub fn subtitle(mut self, subtitle: impl Into<String>) -> Self {
-        self.subtitle = Some(subtitle.into());
-        self
     }
 
     /// Set the UID for this item.
@@ -431,6 +515,13 @@ impl Item {
     #[must_use]
     pub fn uid(mut self, uid: impl Into<String>) -> Self {
         self.uid = Some(uid.into());
+        self
+    }
+
+    /// Set the subtitle for this item.
+    #[must_use]
+    pub fn subtitle(mut self, subtitle: impl Into<String>) -> Self {
+        self.subtitle = Some(subtitle.into());
         self
     }
 
@@ -464,7 +555,7 @@ impl Item {
     /// Set the icon displayed in the result row.
     ///
     /// Workflows are run from their workflow folder, so you can reference icons
-    /// stored in your workflow relatively.
+    /// stored in your workflow directory.
     #[must_use]
     pub fn icon(mut self, icon: Icon) -> Self {
         self.icon = Some(icon);
@@ -516,40 +607,6 @@ impl Item {
     #[must_use]
     pub fn kind(mut self, kind: Kind) -> Self {
         self.kind = kind;
-        self
-    }
-
-    /// Set the text the user will get when copying the selected result row with
-    /// ⌘C or displaying large type with ⌘L.
-    ///
-    /// If these are not defined, you will inherit Alfred's standard behaviour
-    /// where the arg is copied to the Clipboard or used for Large Type.
-    #[must_use]
-    pub fn copy_text(mut self, copy: impl Into<String>) -> Self {
-        self.text.get_or_insert_with(Text::default).copy = Some(copy.into());
-        self
-    }
-
-    /// Set the text the user will get when displaying large type with ⌘L.
-    ///
-    /// If this is not defined, you will inherit Alfred's standard behaviour
-    /// where the arg is used for Large Type.
-    #[must_use]
-    pub fn large_type_text(mut self, large_type: impl Into<String>) -> Self {
-        self.text.get_or_insert_with(Text::default).large_type = Some(large_type.into());
-        self
-    }
-
-    /// Set the Quick Look URL for the item.
-    ///
-    /// This will be visible if the user uses the Quick Look feature within
-    /// Alfred (tapping shift, or ⌘Y). This field will also accept a file path,
-    /// both absolute and relative to home using ~/.
-    ///
-    /// If absent, Alfred will attempt to use the arg as the quicklook URL.
-    #[must_use]
-    pub fn quicklook_url(mut self, quicklook_url: impl Into<String>) -> Self {
-        self.quicklook_url = Some(quicklook_url.into());
         self
     }
 
@@ -607,16 +664,91 @@ impl Item {
         self.action = action.into();
         self
     }
+
+    /// Set the text the user will get when copying the selected result row with
+    /// ⌘C or displaying large type with ⌘L.
+    ///
+    /// If these are not defined, you will inherit Alfred's standard behaviour
+    /// where the arg is copied to the Clipboard or used for Large Type.
+    #[must_use]
+    pub fn copy_text(mut self, copy: impl Into<String>) -> Self {
+        self.text.get_or_insert_with(Text::default).copy = Some(copy.into());
+        self
+    }
+
+    /// Set the text the user will get when displaying large type with ⌘L.
+    ///
+    /// If this is not defined, you will inherit Alfred's standard behaviour
+    /// where the arg is used for Large Type.
+    #[must_use]
+    pub fn large_type_text(mut self, large_type: impl Into<String>) -> Self {
+        self.text.get_or_insert_with(Text::default).large_type = Some(large_type.into());
+        self
+    }
+
+    /// Set the Quick Look URL for the item.
+    ///
+    /// This will be visible if the user uses the Quick Look feature within
+    /// Alfred (tapping shift, or ⌘Y). This field will also accept a file path,
+    /// both absolute and relative to home using ~/.
+    ///
+    /// If absent, Alfred will attempt to use the arg as the quicklook URL.
+    #[must_use]
+    pub fn quicklook_url(mut self, quicklook_url: impl Into<String>) -> Self {
+        self.quicklook_url = Some(quicklook_url.into());
+        self
+    }
+
+    /// Override the variables when the item is actioned.
+    ///
+    /// See [`Output::variables`] for more information.
+    ///
+    /// - If not set, inherits the output variables.
+    ///
+    /// - If set, overrides the output variables.
+    ///   ```
+    ///   # use powerpack::Item;
+    ///   let item = Item::new("title").variables([("key1", "value1")]);
+    ///   ```
+    ///
+    /// - If set to an empty object, no variables are passed out.
+    ///   ```
+    ///   # use powerpack::Item;
+    ///   let item = Item::new("title").variables::<&str, &str>([]);
+    ///   ```
+    #[must_use]
+    pub fn variables<K, V>(mut self, variables: impl IntoIterator<Item = (K, V)>) -> Self
+    where
+        K: Into<String>,
+        V: Into<String>,
+    {
+        self.variables = Some(
+            variables
+                .into_iter()
+                .map(|(k, v)| (k.into(), v.into()))
+                .collect(),
+        );
+        self
+    }
 }
 
-fn duration_as_secs<S>(duration: &Option<Duration>, s: S) -> Result<S::Ok, S::Error>
+#[inline]
+fn option_duration_as_secs<S>(duration: &Option<Duration>, s: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
     match duration {
-        Some(d) => s.serialize_f32(d.as_secs_f32()),
+        Some(d) => duration_as_secs(d, s),
         None => unreachable!(),
     }
+}
+
+#[inline]
+fn duration_as_secs<S>(duration: &Duration, s: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    s.serialize_f32(duration.as_secs_f32())
 }
 
 impl Output {
@@ -644,6 +776,37 @@ impl Output {
     /// during a re-run.
     pub fn skip_knowledge(&mut self, skip_knowledge: bool) -> &mut Self {
         self.skip_knowledge = Some(skip_knowledge);
+        self
+    }
+
+    /// Set the variables which are passed out of the script filter object.
+    ///
+    /// These remain accessible throughout the current session as environment
+    /// variables. In addition, they are passed back in when the script reruns
+    /// within the same session. This can be used for managing state between
+    /// runs as the user types input or when the script is set to re-run after
+    /// an interval.
+    ///
+    /// These can be overridden on a per-item or per-modifier basis. See
+    /// [`Item::variables`] and [`Modifier::variables`].
+    #[must_use]
+    pub fn variables<K, V>(mut self, variables: impl IntoIterator<Item = (K, V)>) -> Self
+    where
+        K: Into<String>,
+        V: Into<String>,
+    {
+        self.variables = Some(
+            variables
+                .into_iter()
+                .map(|(k, v)| (k.into(), v.into()))
+                .collect(),
+        );
+        self
+    }
+
+    /// Set the cache settings for this output.
+    pub fn cache(&mut self, cache: Cache) -> &mut Self {
+        self.cache = Some(cache);
         self
     }
 
