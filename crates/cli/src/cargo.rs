@@ -21,7 +21,6 @@ pub enum Mode {
 
 #[derive(Debug)]
 pub struct Metadata {
-    pub workspace_dir: PathBuf,
     pub manifest_dir: PathBuf,
     pub target_dir: PathBuf,
     pub package_name: String,
@@ -101,7 +100,6 @@ pub fn build(
 pub fn metadata(package: Option<&str>) -> Result<Metadata> {
     let metadata::Metadata {
         packages,
-        workspace_root,
         target_directory,
         resolve,
         ..
@@ -122,12 +120,16 @@ pub fn metadata(package: Option<&str>) -> Result<Metadata> {
     let binary_names = pkg
         .targets
         .into_iter()
-        .filter(|target| target.kind.iter().any(|kind| kind == "bin"))
+        .filter(|target| {
+            target
+                .kind
+                .iter()
+                .any(|kind| matches!(kind, metadata::TargetKind::Bin))
+        })
         .map(|target| target.name)
         .collect();
 
     Ok(Metadata {
-        workspace_dir: workspace_root.into(),
         manifest_dir: pkg.manifest_path.parent().unwrap().into(),
         target_dir: target_directory.into(),
         package_name: pkg.name,
@@ -136,15 +138,15 @@ pub fn metadata(package: Option<&str>) -> Result<Metadata> {
 }
 
 /// Read the Cargo manifest.
-pub fn read_manifest(dir: &Path) -> Result<toml::Document> {
+pub fn read_manifest(dir: &Path) -> Result<toml::DocumentMut> {
     let manifest_path = dir.join("Cargo.toml");
     let contents = fs::read_to_string(manifest_path)?;
-    let doc = toml::Document::from_str(&contents)?;
+    let doc = toml::DocumentMut::from_str(&contents)?;
     Ok(doc)
 }
 
 /// Write a Cargo manifest.
-pub fn write_manifest(dir: &Path, doc: &toml::Document) -> Result<()> {
+pub fn write_manifest(dir: &Path, doc: &toml::DocumentMut) -> Result<()> {
     let path = dir.join("Cargo.toml");
     fs::write(path, doc.to_string())?;
     Ok(())

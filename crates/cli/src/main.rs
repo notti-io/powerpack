@@ -32,7 +32,7 @@ fn print_warning(header: &str, message: impl AsRef<str>) {
     }
 }
 
-fn prompt_for_workflow_info(doc: &toml::Document) -> Result<alfred::WorkflowInfo> {
+fn prompt_for_workflow_info(doc: &toml::DocumentMut) -> Result<alfred::WorkflowInfo> {
     let package_name = doc["package"]["name"].as_str().context("expected string")?;
     println!("Please enter the workflow details:");
     Ok(alfred::WorkflowInfo {

@@ -33,7 +33,6 @@
 
 use std::io;
 use std::panic;
-use std::panic::PanicInfo;
 use std::process;
 
 #[derive(Debug, Clone, Copy)]
@@ -68,7 +67,8 @@ fn handle_err(res: i32) -> io::Result<i32> {
     }
 }
 
-fn panic_hook(info: &PanicInfo<'_>) {
+#[allow(deprecated)]
+fn panic_hook(info: &panic::PanicInfo<'_>) {
     let msg = match info.payload().downcast_ref::<&'static str>() {
         Some(s) => *s,
         None => match info.payload().downcast_ref::<String>() {

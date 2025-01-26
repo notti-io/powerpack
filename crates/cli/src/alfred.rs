@@ -129,7 +129,7 @@ pub fn package(src_dir: &Path, dst: &Path) -> Result<()> {
 
         // preserve file permissions
         let mode = path.metadata()?.permissions().mode();
-        let options = zip::write::FileOptions::default().unix_permissions(mode);
+        let options = zip::write::SimpleFileOptions::default().unix_permissions(mode);
 
         if path.is_file() {
             zip.start_file(name, options)?;
