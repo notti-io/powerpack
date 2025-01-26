@@ -57,11 +57,7 @@ jobs:
         run: echo "value=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - name: Check tag against package versions
-        run: |
-          grep '^version = "${{ steps.version.outputs.value }}"$' Cargo.toml
-          grep '^version = "${{ steps.version.outputs.value }}"$' crates/cli/Cargo.toml
-          grep '^version = "${{ steps.version.outputs.value }}"$' crates/detach/Cargo.toml
-          grep '^version = "${{ steps.version.outputs.value }}"$' crates/env/Cargo.toml
+        run: grep '^version = "${{ steps.version.outputs.value }}"$' Cargo.toml
 
   # ---------------------------------------------------------------------------
   # Publish

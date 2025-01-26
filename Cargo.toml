@@ -2,7 +2,7 @@
 members = ["crates/*", "examples/*"]
 
 [workspace.package]
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Ross MacArthur <ross@macarthur.io>"]
 edition = "2021"
 repository = "https://github.com/rossmacarthur/powerpack"
@@ -11,9 +11,9 @@ keywords = ["alfred", "workflow"]
 categories = ["command-line-utilities"]
 
 [workspace.dependencies]
-powerpack = { version = "0.5.0", path = "." }
-powerpack-detach = { version = "0.5.0", path = "crates/detach" }
-powerpack-env = { version = "0.5.0", path = "crates/env" }
+powerpack = { version = "0.6.0", path = "." }
+powerpack-detach = { version = "0.6.0", path = "crates/detach" }
+powerpack-env = { version = "0.6.0", path = "crates/env" }
 
 ###############################################################################
 

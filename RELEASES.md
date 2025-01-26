@@ -2,7 +2,7 @@
 
 ### 0.6.0
 
-*Unreleased*
+*January 26th, 2025*
 
 #### powerpack
 
