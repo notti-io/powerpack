@@ -1,5 +1,31 @@
 # 📝 Release notes
 
+### 0.6.0
+
+*Unreleased*
+
+#### powerpack
+
+- [Add support for variables.][a61b43ce] Adds [`Output::variables`],
+  [`Item::variables`], and [`Modifier::variables`] which allow you to set the
+  variables which are passed out of the script filter object.
+
+  These remain accessible throughout the current session as environment
+  variables. In addition, they are passed back in when the script reruns within
+  the same session. This can be used for managing state between runs as the user
+  types input or when the script is set to re-run after an interval.
+
+- [Add `compile_error!` binary to `powerpack` crate.][b8cc449c] If you try to
+  install `powerpack` as a binary it will now direct you to install
+  `powerpack-cli`.
+
+[`Modifier::variables`]: https://docs.rs/powerpack/latest/powerpack/struct.Modifier.html#method.variables
+[`Item::variables`]: https://docs.rs/powerpack/latest/powerpack/struct.Item.html#method.variables
+[`Output::variables`]: https://docs.rs/powerpack/latest/powerpack/struct.Output.html#method.variables
+
+[a61b43ce]: https://github.com/rossmacarthur/powerpack/commit/a61b43ced346edf1cd9e019c6dda046939433e5c
+[b8cc449c]: https://github.com/rossmacarthur/powerpack/commit/b8cc449c585275285352c359c23da32412ab79a2
+
 ### 0.5.0
 
 *December 31st, 2023*
