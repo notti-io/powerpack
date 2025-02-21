@@ -41,11 +41,14 @@ use serde::{Serialize, Serializer};
 pub use serde_json::json as value;
 pub use serde_json::Value;
 
+#[cfg(feature = "env")]
+pub use powerpack_env as env;
+
 #[cfg(feature = "detach")]
 pub use powerpack_detach as detach;
 
-#[cfg(feature = "env")]
-pub use powerpack_env as env;
+#[cfg(feature = "logger")]
+pub use powerpack_logger as logger;
 
 fn is_default<T: Default + PartialEq>(t: &T) -> bool {
     t == &T::default()

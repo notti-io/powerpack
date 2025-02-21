@@ -11,5 +11,5 @@ keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
-libc = "0.2.151"
-log = { version = "0.4.20", features = ["std"] }
+libc.workspace = true
+log.workspace = true

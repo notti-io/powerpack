@@ -1,9 +1,9 @@
 [package]
-name = "powerpack-env"
+name = "powerpack-logger"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
-description = "⚡ Useful environment variables in Alfred workflows"
+description = "⚡ A simple logger for Alfred workflows"
 readme = "README.md"
 repository.workspace = true
 license.workspace = true
@@ -12,3 +12,7 @@ categories.workspace = true
 
 [dependencies]
 home.workspace = true
+jiff.workspace = true
+log.workspace = true
+thiserror.workspace = true
+powerpack-env.workspace = true

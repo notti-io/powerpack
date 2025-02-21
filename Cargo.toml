@@ -14,6 +14,14 @@ categories = ["command-line-utilities"]
 powerpack = { version = "0.6.0", path = "." }
 powerpack-detach = { version = "0.6.0", path = "crates/detach" }
 powerpack-env = { version = "0.6.0", path = "crates/env" }
+powerpack-logger = { version = "0.6.0", path = "crates/logger" }
+home = "0.5.3"
+jiff = "0.2.0"
+libc = "0.2.151"
+log = { version = "0.4.17", features = ["std"] }
+serde = { version = "1.0.193", features = ["derive"] }
+serde_json = "1.0.108"
+thiserror = "2.0.11"
 
 ###############################################################################
 
@@ -30,10 +38,11 @@ keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
-powerpack-detach = { workspace = true, optional = true }
+serde.workspace = true
+serde_json.workspace = true
 powerpack-env = { workspace = true, optional = true }
-serde = { version = "1.0.193", features = ["derive"] }
-serde_json = "1.0.108"
+powerpack-detach = { workspace = true, optional = true }
+powerpack-logger = { workspace = true, optional = true }
 
 [dev-dependencies]
 goldie = "0.4.3"
@@ -42,6 +51,7 @@ goldie = "0.4.3"
 default = ["env"]
 detach = ["dep:powerpack-detach"]
 env = ["dep:powerpack-env"]
+logger = ["dep:powerpack-logger"]
 
 [profile.release]
 strip = true
