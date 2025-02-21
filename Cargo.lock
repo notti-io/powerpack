@@ -455,6 +455,9 @@ dependencies = [
 [[package]]
 name = "powerpack-env"
 version = "0.6.0"
+dependencies = [
+ "home",
+]
 
 [[package]]
 name = "pretty_assertions"
