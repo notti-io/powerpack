@@ -61,7 +61,6 @@
 mod query;
 
 use std::error::Error as StdError;
-use std::fmt::Write;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
@@ -336,8 +335,11 @@ impl Cache {
         let update_cache = update_fn.map(|f| {
             || match update(&directory, &path, checksum, f) {
                 Ok(true) => log::info!("cache: updated {key}"),
-                Ok(false) => log::warn!("cache: another process updated {key}"),
-                Err(err) => log::error!("cache: failed to update {key}: {}", format_err(&err)),
+                Ok(false) => log::debug!("cache: another process updated {key}"),
+                Err(err) => log::error!(
+                    "cache: failed to update {key}: {}",
+                    detach::format_err(&err)
+                ),
             }
         });
 
@@ -411,20 +413,4 @@ where
         }
         None => Ok(false),
     }
-}
-
-fn format_err(err: &(dyn StdError + 'static)) -> String {
-    let mut out = err.to_string();
-    let mut tmp = String::new();
-    let mut source = err.source();
-    while let Some(err) = source {
-        write!(&mut tmp, "{err}").expect("fmt error");
-        if !out.contains(&tmp) {
-            out.push_str(": ");
-            out.push_str(&tmp);
-        }
-        source = err.source();
-        tmp.clear();
-    }
-    out
 }

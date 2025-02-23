@@ -31,6 +31,8 @@
 //! }).expect("forked child process");
 //! ```
 
+use std::error::Error;
+use std::fmt::Write;
 use std::io;
 use std::panic;
 use std::process;
@@ -93,7 +95,7 @@ where
                 process::exit(0);
             }
             Err(err) => {
-                log::error!("{:#}", err);
+                log::error!("{}", format_err(&err));
                 process::exit(1);
             }
         },
@@ -108,4 +110,27 @@ where
     panic::set_hook(Box::new(panic_hook));
     f();
     Ok(())
+}
+
+#[doc(hidden)]
+pub fn format_err(err: &(dyn Error + 'static)) -> String {
+    let mut out = err.to_string();
+    let mut tmp = String::new();
+    let mut source = err.source();
+    while let Some(err) = source {
+        match write!(&mut tmp, "{err}") {
+            Ok(_) => {
+                if !out.contains(&tmp) {
+                    out.push_str(": ");
+                    out.push_str(&tmp);
+                }
+            }
+            Err(_) => {
+                out.push_str(": <unknown>");
+            }
+        }
+        source = err.source();
+        tmp.clear();
+    }
+    out
 }
