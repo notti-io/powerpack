@@ -1,5 +1,15 @@
 # 📝 Release notes
 
+### 0.6.2
+
+*February 23rd, 2025*
+
+#### powerpack
+
+- [Fix feature check for `powerpack::cache`.][0a745db9]
+
+[0a745db9]: https://github.com/rossmacarthur/powerpack/commit/0a745db93f827e067b15d008171ff3c2157ef34a
+
 ### 0.6.1
 
 *February 23rd, 2025*
