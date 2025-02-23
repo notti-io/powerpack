@@ -12,9 +12,12 @@ categories = ["command-line-utilities"]
 
 [workspace.dependencies]
 powerpack = { version = "0.6.0", path = "." }
+powerpack-cache = { version = "0.6.0", path = "crates/cache" }
 powerpack-detach = { version = "0.6.0", path = "crates/detach" }
 powerpack-env = { version = "0.6.0", path = "crates/env" }
 powerpack-logger = { version = "0.6.0", path = "crates/logger" }
+flagset = "0.4.6"
+fmutex = "0.1.0"
 home = "0.5.3"
 jiff = "0.2.0"
 libc = "0.2.151"
@@ -41,6 +44,7 @@ categories.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 powerpack-env = { workspace = true, optional = true }
+powerpack-cache = { workspace = true, optional = true }
 powerpack-detach = { workspace = true, optional = true }
 powerpack-logger = { workspace = true, optional = true }
 
@@ -49,6 +53,7 @@ goldie = "0.4.3"
 
 [features]
 default = ["env"]
+cache = ["dep:powerpack-cache"]
 detach = ["dep:powerpack-detach"]
 env = ["dep:powerpack-env"]
 logger = ["dep:powerpack-logger"]

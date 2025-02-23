@@ -1,0 +1,22 @@
+[package]
+name = "powerpack-cache"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+description = "⚡ Cache management for your Alfred workflow"
+readme = "README.md"
+repository.workspace = true
+license.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+flagset.workspace = true
+fmutex.workspace = true
+home.workspace = true
+log.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+powerpack-detach.workspace = true
+powerpack-env.workspace = true

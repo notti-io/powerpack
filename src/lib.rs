@@ -45,6 +45,9 @@ pub use serde_json::Value;
 pub use powerpack_env as env;
 
 #[cfg(feature = "detach")]
+pub use powerpack_cache as cache;
+
+#[cfg(feature = "detach")]
 pub use powerpack_detach as detach;
 
 #[cfg(feature = "logger")]
@@ -169,7 +172,7 @@ pub struct Modifier {
     data: Data,
 }
 
-/// The cache settings for an [`Output`].
+/// The Alfred cache settings for an [`Output`].
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize)]
 pub struct Cache {
     /// The cache duration in seconds.

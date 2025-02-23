@@ -246,6 +246,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
 
 [[package]]
+name = "flagset"
+version = "0.4.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b3ea1ec5f8307826a5b71094dd91fc04d4ae75d5709b20ad351c7fb4815c86ec"
+
+[[package]]
 name = "flate2"
 version = "1.0.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -254,6 +260,15 @@ dependencies = [
  "crc32fast",
  "libz-sys",
  "miniz_oxide",
+]
+
+[[package]]
+name = "fmutex"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "01e84c17070603126a7b0cd07d0ecc8e8cca4d15b67934ac2740286a84f3086c"
+dependencies = [
+ "libc",
 ]
 
 [[package]]
@@ -465,11 +480,27 @@ name = "powerpack"
 version = "0.6.0"
 dependencies = [
  "goldie",
+ "powerpack-cache",
  "powerpack-detach",
  "powerpack-env",
  "powerpack-logger",
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "powerpack-cache"
+version = "0.6.0"
+dependencies = [
+ "flagset",
+ "fmutex",
+ "home",
+ "log",
+ "powerpack-detach",
+ "powerpack-env",
+ "serde",
+ "serde_json",
+ "thiserror",
 ]
 
 [[package]]
