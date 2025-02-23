@@ -44,7 +44,7 @@ pub use serde_json::Value;
 #[cfg(feature = "env")]
 pub use powerpack_env as env;
 
-#[cfg(feature = "detach")]
+#[cfg(feature = "cache")]
 pub use powerpack_cache as cache;
 
 #[cfg(feature = "detach")]
