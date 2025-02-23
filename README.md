@@ -11,8 +11,9 @@ Supercharge your [Alfred 🎩][alfred] workflows by building them in Rust 🦀!
 ## 🚀 Getting started
 
 This project contains a `powerpack` crate which provides types for developing
-script filter Alfred workflows in Rust. It also provides a command line tool to
-initialize, build, and install  workflows built using the `powerpack` crate.
+script filter Alfred workflows in Rust as well as various utilities that make it
+easier to build workflows. It also provides a command line tool to initialize,
+build, and install workflows built using the `powerpack` crate.
 
 Firstly, install the command line tool.
 ```sh

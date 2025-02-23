@@ -1,5 +1,61 @@
 # 📝 Release notes
 
+### 0.6.1
+
+*Unreleased*
+
+#### powerpack
+
+- [Add cache crate.][2c3ca62a] Provides a cache management system for Alfred
+  workflows. This crate is gated behind the `cache` feature in `powerpack`. Data
+  is stored in the Alfred workflow cache directory by default. The cache is
+  updated asynchronously using `powerpack::detach::spawn`.
+
+  See the crate level documentation for more information.
+
+- [Add logger crate.][029f48d8] Adds a simple file logger implementation that
+  logs to the Alfred workflow cache directory by default. This crate is gated
+  behind the `logger` feature in `powerpack`.
+
+  ```rust
+  use powerpack::logger;
+
+  logger::Builder::new()
+      .filename(
+        concat!(env!("CARGO_PKG_NAME"), "-", env!("CARGO_PKG_VERSION"), ".log")
+      )
+      .max_level(logger::LevelFilter::Warn)
+      .init();
+  ```
+
+  See the crate level documentation for more information.
+
+- [env: Add defaulting workflow cache and data fns.][e28d8216] Add two new
+  functions that fetch the workflow cache and data directories and instead of
+  returning an `Option` return a sensible default value if the Alfred
+  environment variables are not set.
+
+  ```rust
+  use powerpack::env;
+
+  let cache_dir = env::workflow_cache_or_default();
+  let data_dir = env::workflow_data_or_default();
+  ```
+
+  There are also fallible versions which only fail if the user's home directory
+  cannot be determined;
+  ```rust
+  use powerpack::env;
+
+  let cache_dir = env::try_workflow_cache_or_default()?;
+  let data_dir = env::try_workflow_data_or_default()?;
+  ```
+
+
+[2c3ca62a]: https://github.com/rossmacarthur/powerpack/commit/2c3ca62a99a9c67ddc92169ff17a2237a0b097b7
+[029f48d8]: https://github.com/rossmacarthur/powerpack/commit/029f48d84e5dcb3c2f14e859f47230d86c92f3c9
+[e28d8216]: https://github.com/rossmacarthur/powerpack/commit/e28d8216333be7fbd81b159d3549e2bb798ec6d4
+
 ### 0.6.0
 
 *January 26th, 2025*
