@@ -1,5 +1,15 @@
 # 📝 Release notes
 
+### 0.6.3
+
+*February 23rd, 2025*
+
+#### powerpack
+
+- [Tweak logging of errors in `-cache` and `-detach` crates.][a8e70a74]
+
+[a8e70a74]: https://github.com/rossmacarthur/powerpack/commit/a8e70a7417723df3db2bca8b51a487408ab636b8
+
 ### 0.6.2
 
 *February 23rd, 2025*
