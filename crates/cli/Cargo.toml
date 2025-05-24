@@ -20,7 +20,7 @@ peter = "0.2.1"
 plist = "1.6.0"
 toml_edit = "0.22.22"
 uuid = { version = "1.6.1", features = ["v4"] }
-zip = { version = "2.2.2", features = ["deflate-zlib", "time"], default-features = false }
+zip = { version = "2.3.0", features = ["deflate-zlib", "time"], default-features = false }
 
 [dev-dependencies]
 powerpack.workspace = true
